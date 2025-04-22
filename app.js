@@ -1,0 +1,82 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const auth = authService;
+    const loginForm = document.getElementById('loginForm');
+    const chatContainer = document.getElementById('chat-container');
+    
+    // Sistema de Autenticação
+    if(auth.validateSession()) {
+        showChatInterface();
+    }
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if(auth.authenticate(username, password)) {
+            auth.startSession();
+            showChatInterface();
+        } else {
+            showError('Invalid credentials');
+        }
+    });
+
+    // Sistema de Chat
+    class ProfessionalChat {
+        constructor() {
+            this.messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+            this.init();
+        }
+
+        init() {
+            this.renderMessages();
+            this.setupEventListeners();
+        }
+
+        addMessage(content) {
+            const message = {
+                content,
+                timestamp: new Date().toISOString(),
+                user: 'admin'
+            };
+            this.messages.push(message);
+            localStorage.setItem('chatMessages', JSON.stringify(this.messages));
+            this.renderMessages();
+        }
+
+        renderMessages() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = this.messages.map(msg => `
+                <div class="message">
+                    <div class="message-header">
+                        <span class="user">${msg.user}</span>
+                        <span class="time">${new Date(msg.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                    <div class="message-content">${msg.content}</div>
+                </div>
+            `).join('');
+        }
+
+        setupEventListeners() {
+            document.getElementById('sendBtn').addEventListener('click', () => {
+                const input = document.getElementById('messageInput');
+                if(input.value.trim()) {
+                    this.addMessage(input.value.trim());
+                    input.value = '';
+                }
+            });
+        }
+    }
+
+    function showChatInterface() {
+        document.getElementById('auth-container').classList.add('hidden');
+        chatContainer.classList.remove('hidden');
+        new ProfessionalChat();
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        auth.endSession();
+        window.location.reload();
+    });
+});
