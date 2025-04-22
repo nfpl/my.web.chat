@@ -80,4 +80,19 @@ body {
     flex-direction: column;
 }
 
+/* Error Message Styles */
+#error-message {
+    color: #e74c3c;
+    text-align: center;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: rgba(231, 76, 60, 0.1);
+    transition: all 0.3s ease;
+}
+
+.hidden {
+    display: none;
+}
+
 /* Estilos completos disponíveis no GitHub */
