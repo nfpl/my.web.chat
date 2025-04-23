@@ -1,13 +1,46 @@
+// Configuração (mude para true para usar Firebase)
+const USE_FIREBASE = false;
+
 // Sistema de Chat
 class ProfessionalChat {
     constructor() {
-        this.messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-        this.init();
+        this.messages = [];
+        this.init().then(() => {
+            this.renderMessages();
+        });
+    }
+
+    async init() {
+        if(USE_FIREBASE) {
+            // Configuração do Firebase
+            const firebaseConfig = {
+                apiKey: "SUA_CHAVE_API",
+                authDomain: "SEU_DOMINIO.firebaseapp.com",
+                projectId: "SEU_PROJETO",
+                storageBucket: "SEU_BUCKET.appspot.com",
+                messagingSenderId: "SEU_SENDER_ID",
+                appId: "SEU_APP_ID"
+            };
+            
+            // Inicializar Firebase
+            firebase.initializeApp(firebaseConfig);
+            this.db = firebase.firestore();
+            await this.loadMessagesFromFirebase();
+        } else {
+            // Modo local (GitHub Pages)
+            this.messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        }
+    }
+
+    async loadMessagesFromFirebase() {
+        const snapshot = await this.db.collection("messages").orderBy("timestamp").get();
+        this.messages = snapshot.docs.map(doc => doc.data());
     }
 
     init() {
         this.renderMessages();
         this.setupEventListeners();
+        this.setupEmojiPicker();
     }
 
     addMessage(content) {
@@ -32,14 +65,40 @@ class ProfessionalChat {
                 <div class="message-content">${msg.content}</div>
             </div>
         `).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    setupEmojiPicker() {
+        const emojis = document.querySelectorAll('.emoji-picker span');
+        const input = document.getElementById('messageInput');
+        
+        emojis.forEach(emoji => {
+            emoji.addEventListener('click', () => {
+                input.value += emoji.textContent;
+                input.focus();
+            });
+        });
     }
 
     setupEventListeners() {
-        document.getElementById('sendBtn').addEventListener('click', () => {
-            const input = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const input = document.getElementById('messageInput');
+
+        // Acessibilidade
+        sendBtn.setAttribute('aria-label', 'Enviar mensagem');
+        input.setAttribute('aria-label', 'Digite sua mensagem');
+        input.setAttribute('placeholder', 'Digite sua mensagem...');
+
+        sendBtn.addEventListener('click', () => {
             if(input.value.trim()) {
                 this.addMessage(input.value.trim());
                 input.value = '';
+            }
+        });
+
+        input.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                sendBtn.click();
             }
         });
     }
@@ -67,8 +126,12 @@ function showError(message) {
 document.addEventListener('DOMContentLoaded', () => {
     const auth = authService;
     const loginForm = document.getElementById('loginForm');
-    const chatContainer = document.getElementById('chat-container');
     
+    // Acessibilidade
+    document.getElementById('username').setAttribute('placeholder', 'Digite seu usuário');
+    document.getElementById('password').setAttribute('placeholder', 'Digite sua senha');
+    document.getElementById('logoutBtn').setAttribute('aria-label', 'Sair do chat');
+
     // Sistema de Autenticação
     if(auth.validateSession()) {
         showChatInterface();
@@ -83,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             auth.startSession();
             showChatInterface();
         } else {
-            showError('Invalid credentials');
+            showError('Credenciais inválidas');
         }
     });
 
