@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat com IA Evolutiva</title>
+    <style>
+        :root {
+            --primary: #6d28d9;
+            --secondary: #8b5cf6;
+            --background: #f5f3ff;
+            --text: #1e1b4b;
+            --ai-bubble: #e9d5ff;
+            --user-bubble: #8b5cf6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 1rem;
+            line-height: 1.4;
+            position: relative;
+        }
+        
+        .ai-message {
+            background: var(--ai-bubble);
+            align-self: flex-start;
+        }
+        
+        .user-message {
+            background: var(--user-bubble);
+            color: white;
+            align-self: flex-end;
+        }
+        
+        .message-input {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #eee;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        
+        #sendBtn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0 1.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        #sendBtn:hover {
+            background: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>Chat com IA Evolutiva</h2>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai-message">
+                Olá! Sou uma IA em desenvolvimento. Como posso ajudar?
+            </div>
+        </div>
+        
+        <div class="message-input">
+            <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+            <button id="sendBtn">Enviar</button>
+        </div>
+    </div>
+
+    <script src="ai-core.js"></script>
+    <script>
+        const ai = new AICore();
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        
+        // Conhecimento inicial
+        ai.learn("Qual é seu nome?", "Meu nome é Aprendiz");
+        ai.learn("Quem é você?", "Sou uma IA que aprende com você!");
+        ai.learn("Oi", "Olá! Como posso ajudar?");
+        
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                messageInput.value = '';
+                
+                setTimeout(() => {
+                    const response = ai.query(message);
+                    addMessage(response);
+                    
+                    if (response.includes("não entendo")) {
+                        const teach = prompt(`Como devo responder a "${message}"?`);
+                        if (teach) {
+                            ai.learn(message, teach);
+                            addMessage(`Obrigado! Agora sei responder a "${message}"`);
+                        }
+                    }
+                }, 500);
+            }
+        }
+        
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

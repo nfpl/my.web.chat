@@ -130,10 +130,48 @@ body {
 
 /* Estilos para mensagens */
 .message {
-    padding: 0.75rem 1rem;
+    display: flex;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 1rem;
+    max-width: 90%;
+    position: relative;
+    align-items: flex-start;
+}
+
+.user-message {
+    background: var(--accent-color);
+    color: white;
+    margin-left: auto;
+    margin-right: 0.5rem;
+}
+
+.ai-message {
+    background: var(--chat-bubble-bot);
+    margin-right: auto;
+    margin-left: 0.5rem;
+}
+
+.message-avatar {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+.message-content {
+    flex: 1;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 0.5rem;
-    border-radius: 0.5rem;
-    background: #f1f5f9;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.message-text {
+    word-break: break-word;
+    line-height: 1.4;
 }
 
 .message-header {
